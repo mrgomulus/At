@@ -13,5 +13,16 @@ namespace OBD2Suite.Models
         public string DeviceName { get; set; } = "";
         public string ElmVersion { get; set; } = "";
         public int Timeout { get; set; } = 5000;
+
+        // ── WiFi / Network connection ────────────────────────────────────────
+        /// <summary>IP address of the WiFi OBD adapter (default ELM327 WiFi address).</summary>
+        public string IpAddress { get; set; } = "192.168.0.10";
+
+        /// <summary>TCP port for network connections (ELM327 WiFi default: 35000).</summary>
+        public int NetworkPort { get; set; } = 35000;
+
+        // ── Bluetooth connection ─────────────────────────────────────────────
+        /// <summary>Bluetooth MAC address as a 12-hex-digit string (e.g. "001122334455").</summary>
+        public string BluetoothAddress { get; set; } = "";
     }
 }
