@@ -19,6 +19,7 @@ namespace OBD2Suite.ViewModels
         public DtcViewModel DtcVM { get; }
         public VehicleInfoViewModel VehicleInfoVM { get; }
         public CodingViewModel CodingVM { get; }
+        public OemFeaturesViewModel OemFeaturesVM { get; }
         public SettingsViewModel SettingsVM { get; }
 
         public BaseViewModel CurrentView
@@ -55,6 +56,7 @@ namespace OBD2Suite.ViewModels
         public ICommand NavigateDtcCommand { get; }
         public ICommand NavigateVehicleInfoCommand { get; }
         public ICommand NavigateCodingCommand { get; }
+        public ICommand NavigateOemFeaturesCommand { get; }
         public ICommand NavigateSettingsCommand { get; }
         public ICommand ConnectCommand { get; }
 
@@ -67,15 +69,17 @@ namespace OBD2Suite.ViewModels
             DtcVM = new DtcViewModel(_obdService);
             VehicleInfoVM = new VehicleInfoViewModel(_obdService);
             CodingVM = new CodingViewModel(_obdService);
+            OemFeaturesVM = new OemFeaturesViewModel(_obdService);
 
             SettingsVM.ConnectionChanged += OnConnectionChanged;
 
-            NavigateDashboardCommand = new RelayCommand(_ => CurrentView = DashboardVM);
-            NavigateDtcCommand = new RelayCommand(_ => CurrentView = DtcVM);
+            NavigateDashboardCommand   = new RelayCommand(_ => CurrentView = DashboardVM);
+            NavigateDtcCommand         = new RelayCommand(_ => CurrentView = DtcVM);
             NavigateVehicleInfoCommand = new RelayCommand(_ => CurrentView = VehicleInfoVM);
-            NavigateCodingCommand = new RelayCommand(_ => CurrentView = CodingVM);
-            NavigateSettingsCommand = new RelayCommand(_ => CurrentView = SettingsVM);
-            ConnectCommand = new RelayCommand(async _ => await ToggleConnectionAsync());
+            NavigateCodingCommand      = new RelayCommand(_ => CurrentView = CodingVM);
+            NavigateOemFeaturesCommand = new RelayCommand(_ => CurrentView = OemFeaturesVM);
+            NavigateSettingsCommand    = new RelayCommand(_ => CurrentView = SettingsVM);
+            ConnectCommand             = new RelayCommand(async _ => await ToggleConnectionAsync());
 
             CurrentView = SettingsVM;
         }

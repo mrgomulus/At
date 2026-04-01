@@ -1,0 +1,154 @@
+<UserControl x:Class="OBD2Suite.Views.CodingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="ECU Coding &amp; Adaptations" FontSize="22" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
+            <TextBlock Text="⚠ Changes to ECU coding and adaptations may affect vehicle operation. Proceed with caution."
+                       Foreground="#FFFF6B35" FontSize="11" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- ECU Selection + Coding -->
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ECU Selector -->
+                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,16,12">
+                    <TextBlock Text="ECU Module" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" Margin="0,0,0,4"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Grid.Column="0" ItemsSource="{Binding EcuModules}"
+                                  SelectedItem="{Binding SelectedEcu}"
+                                  DisplayMemberPath="Name"
+                                  Style="{StaticResource BaseComboBoxStyle}"/>
+                        <Button Grid.Column="1" Content="Load ECUs" Command="{Binding LoadEcusCommand}"
+                                Style="{StaticResource BaseButtonStyle}" Padding="12,6" Margin="8,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Current Coding -->
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,16,12">
+                    <TextBlock Text="Current Coding (hex bytes)" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding CurrentCoding, Mode=OneWay}"
+                             IsReadOnly="True" FontFamily="Consolas"
+                             Background="#1A00D4FF" Foreground="{StaticResource AccentBrush}"
+                             BorderBrush="#3A3A5C" Padding="8,6"/>
+                </StackPanel>
+
+                <!-- New Coding + Buttons -->
+                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,16,0">
+                    <TextBlock Text="New Coding (hex bytes, space-separated)" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" Margin="0,0,0,4"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{Binding NewCoding, UpdateSourceTrigger=PropertyChanged}"
+                                 FontFamily="Consolas" Background="#1AFFFFFF" Foreground="{StaticResource PrimaryTextBrush}"
+                                 BorderBrush="#3A3A5C" Padding="8,6"/>
+                        <Button Grid.Column="1" Content="📖 Read" Command="{Binding ReadCodingCommand}"
+                                Style="{StaticResource BaseButtonStyle}" Padding="12,6" Margin="8,0,0,0"/>
+                        <Button Grid.Column="2" Content="✏ Write" Command="{Binding WriteCodingCommand}"
+                                Style="{StaticResource DangerButtonStyle}" Padding="12,6" Margin="8,0,0,0"/>
+                        <ProgressBar Grid.Column="3" IsIndeterminate="True" Width="80" Height="4" Margin="12,0,0,0"
+                                     VerticalAlignment="Center"
+                                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Adaptation -->
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="Adaptation Channel" Foreground="{StaticResource AccentBrush}"
+                           FontWeight="SemiBold" Margin="0,0,0,12"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <TextBlock Text="Channel #" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding AdaptationChannel, UpdateSourceTrigger=PropertyChanged}"
+                                 FontFamily="Consolas" Background="#1AFFFFFF" Foreground="{StaticResource PrimaryTextBrush}"
+                                 BorderBrush="#3A3A5C" Padding="8,6"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                        <TextBlock Text="Current Value" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding AdaptationCurrentValue, Mode=OneWay}" IsReadOnly="True"
+                                 FontFamily="Consolas" Background="#1A00D4FF" Foreground="{StaticResource AccentBrush}"
+                                 BorderBrush="#3A3A5C" Padding="8,6"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                        <TextBlock Text="New Value" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding AdaptationNewValue, UpdateSourceTrigger=PropertyChanged}"
+                                 FontFamily="Consolas" Background="#1AFFFFFF" Foreground="{StaticResource PrimaryTextBrush}"
+                                 BorderBrush="#3A3A5C" Padding="8,6"/>
+                    </StackPanel>
+                    <Button Grid.Column="3" Content="📖 Read" Command="{Binding ReadAdaptationCommand}"
+                            Style="{StaticResource BaseButtonStyle}" Padding="12,6" VerticalAlignment="Bottom" Margin="0,0,8,0"/>
+                    <Button Grid.Column="4" Content="✏ Write" Command="{Binding WriteAdaptationCommand}"
+                            Style="{StaticResource DangerButtonStyle}" Padding="12,6" VerticalAlignment="Bottom"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Log -->
+        <Border Grid.Row="3" Style="{StaticResource CardStyle}" Padding="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="Activity Log" Foreground="{StaticResource AccentBrush}"
+                           FontWeight="SemiBold" Margin="16,12,0,8"/>
+                <TextBox Grid.Row="1" Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True"
+                         FontFamily="Consolas" FontSize="11" Background="Transparent"
+                         Foreground="{StaticResource SecondaryTextBrush}"
+                         BorderThickness="0" Padding="16,8"
+                         TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto"/>
+            </Grid>
+        </Border>
+
+        <!-- Status -->
+        <Border Grid.Row="4" Background="#1A00D4FF" CornerRadius="6" Padding="12,8" Margin="0,12,0,0">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource PrimaryTextBrush}" FontFamily="Consolas" FontSize="12"/>
+        </Border>
+    </Grid>
+</UserControl>

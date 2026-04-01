@@ -943,4 +943,38 @@
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
+    <!-- ── Aliases for consistent naming across views ──────────────── -->
+    <SolidColorBrush x:Key="PrimaryTextBrush"   Color="{StaticResource TextPrimaryColor}"/>
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="{StaticResource TextSecondaryColor}"/>
+
+    <Style x:Key="AccentButtonStyle"  TargetType="Button" BasedOn="{StaticResource AccentButton}"/>
+    <Style x:Key="DangerButtonStyle"  TargetType="Button" BasedOn="{StaticResource DangerButton}"/>
+
+    <!-- Navigation button for the top nav bar -->
+    <Style x:Key="NavButtonStyle" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="16,12"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#1A00D4FF"/>
+                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ComboBox base style -->
+    <Style x:Key="BaseComboBoxStyle" TargetType="ComboBox">
+        <Setter Property="Background" Value="#1AFFFFFF"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="Height" Value="34"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+
 </ResourceDictionary>

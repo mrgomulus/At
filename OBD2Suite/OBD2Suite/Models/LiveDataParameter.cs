@@ -20,6 +20,9 @@ namespace OBD2Suite.Models
         public string DisplayValue => $"{Value:F1} {Unit}";
         public double NormalizedValue => MaxValue > MinValue ? (Value - MinValue) / (MaxValue - MinValue) : 0;
 
+        /// <summary>Width in pixels (0-200) for the bar column in the dashboard grid.</summary>
+        public double BarWidth => Math.Min(200, NormalizedValue * 200);
+
         public string StatusColor
         {
             get
