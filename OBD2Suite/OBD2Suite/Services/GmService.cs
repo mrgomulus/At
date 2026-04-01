@@ -81,7 +81,7 @@ namespace OBD2Suite.Services
         /// <summary>
         /// Read GM-enhanced PIDs (module-specific data not in standard OBD2).
         /// </summary>
-        public async Task<Dictionary<string, string>> ReadEnhancedPidsAsync()
+        public override async Task<Dictionary<string, string>> ReadEnhancedPidsAsync()
         {
             await Task.Delay(IsSimulation ? 300 : 1200);
             if (IsSimulation)

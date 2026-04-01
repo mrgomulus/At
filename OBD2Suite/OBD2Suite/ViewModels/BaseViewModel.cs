@@ -7,6 +7,13 @@ namespace OBD2Suite.ViewModels
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        private string _statusMessage = "";
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            set { _statusMessage = value; OnPropertyChanged(); }
+        }
+
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 

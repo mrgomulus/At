@@ -326,5 +326,77 @@ namespace OBD2Suite.Services
             0x76 => "Parking Assistance",
             _ => $"ECU 0x{addr:X2}"
         };
+
+        // ─── Default implementations of new interface members ───────────────
+
+        public virtual async Task<string> PerformEpbServiceAsync(int ecuAddress)
+        {
+            await Task.Delay(IsSimulation ? 1200 : 3000);
+            return IsSimulation ? "✔ EPB caliper service mode activated (Simulated)" : "✖ Not supported by this vehicle";
+        }
+
+        public virtual async Task<string> PerformDpfRegenerationAsync(int ecuAddress)
+        {
+            await Task.Delay(IsSimulation ? 1500 : 5000);
+            return IsSimulation ? "✔ DPF forced regeneration started — ~30 min (Simulated)" : "✖ DPF regen not supported";
+        }
+
+        public virtual async Task<string> RegisterBatteryAsync(int ecuAddress, int capacityAh, string batteryType)
+        {
+            await Task.Delay(IsSimulation ? 800 : 2000);
+            return IsSimulation ? $"✔ Battery registered: {capacityAh} Ah, {batteryType} (Simulated)" : "✖ Battery registration not supported";
+        }
+
+        public virtual async Task<string> ResetAbsBleedAsync(int ecuAddress)
+        {
+            await Task.Delay(IsSimulation ? 1000 : 3000);
+            return IsSimulation ? "✔ ABS bleed cycle started (Simulated)" : "✖ ABS bleed not supported";
+        }
+
+        public virtual async Task<string> PerformGearboxAdaptationResetAsync(int ecuAddress)
+        {
+            await Task.Delay(IsSimulation ? 800 : 2000);
+            return IsSimulation ? "✔ Gearbox adaptation reset (Simulated)" : "✖ Not supported";
+        }
+
+        public virtual async Task<string> PerformInjectorCodingAsync(int ecuAddress, string[] codes)
+        {
+            await Task.Delay(IsSimulation ? 1000 : 3000);
+            return IsSimulation ? $"✔ {codes.Length} injector code(s) programmed (Simulated)" : "✖ Injector coding not supported";
+        }
+
+        public virtual async Task<string> PerformTpmsReregistrationAsync(int ecuAddress)
+        {
+            await Task.Delay(IsSimulation ? 800 : 2000);
+            return IsSimulation ? "✔ TPMS relearn triggered — drive > 30 km/h (Simulated)" : "✖ TPMS relearn not supported";
+        }
+
+        public virtual async Task<string> ResetAdBlueAsync(int ecuAddress)
+        {
+            await Task.Delay(IsSimulation ? 600 : 1500);
+            return IsSimulation ? "✔ AdBlue quantity reset (Simulated)" : "✖ Not supported";
+        }
+
+        public virtual async Task<string> ResetDpfAshCounterAsync(int ecuAddress)
+        {
+            await Task.Delay(IsSimulation ? 600 : 1500);
+            return IsSimulation ? "✔ DPF ash counter reset (Simulated)" : "✖ Not supported";
+        }
+
+        public virtual async Task<Dictionary<string, string>> ReadEnhancedPidsAsync()
+        {
+            await Task.Delay(IsSimulation ? 400 : 1200);
+            return new Dictionary<string, string>
+            {
+                ["Engine RPM"]         = $"{_rng.Next(700, 4000)} rpm",
+                ["Vehicle Speed"]      = $"{_rng.Next(0, 130)} km/h",
+                ["Coolant Temp"]       = $"{_rng.Next(80, 105)} °C",
+                ["Engine Load"]        = $"{_rng.Next(10, 80):F1} %",
+                ["Throttle Position"]  = $"{_rng.Next(5, 60):F1} %",
+                ["Fuel Rail Pressure"] = $"{_rng.Next(300, 800):F1} bar",
+                ["Intake Temp"]        = $"{_rng.Next(20, 45)} °C",
+                ["Battery Voltage"]    = $"{11.8 + _rng.NextDouble():F2} V",
+            };
+        }
     }
 }

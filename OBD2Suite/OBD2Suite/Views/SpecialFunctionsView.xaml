@@ -1,0 +1,223 @@
+<UserControl x:Class="OBD2Suite.Views.SpecialFunctionsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="320"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Title row -->
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="🔧 SPECIAL SERVICE FUNCTIONS"
+                   Style="{StaticResource HeadingText}" Margin="0,0,0,16"/>
+
+        <!-- Left: Function list with category filter -->
+        <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource SubheadingText}" Text="FUNCTIONS" Margin="0,0,0,8"/>
+                <ComboBox Grid.Row="1" ItemsSource="{Binding Categories}"
+                          SelectedItem="{Binding SelectedCategory}"
+                          Margin="0,0,0,8" Height="34"
+                          Background="#1AFFFFFF" Foreground="{StaticResource TextPrimaryBrush}"
+                          BorderBrush="{StaticResource BorderBrush}"/>
+                <ListBox Grid.Row="2" ItemsSource="{Binding FilteredFunctions}"
+                         SelectedItem="{Binding SelectedFunction}"
+                         Background="Transparent" BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,2" Padding="8,8" CornerRadius="6">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                <Setter Property="Background" Value="#1A00D4FF"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="28"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding CategoryIcon}" FontSize="16" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
+                                                   TextWrapping="Wrap" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding Manufacturer}" FontSize="10"
+                                                   Foreground="{StaticResource InfoBrush}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Padding" Value="0"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <!-- Center: Selected function detail + battery test -->
+        <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,12,0">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Function detail -->
+            <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,12"
+                    Visibility="{Binding SelectedFunction, Converter={StaticResource NullToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="{Binding SelectedFunction.CategoryIcon}" FontSize="24" Margin="0,0,12,0"/>
+                        <TextBlock Text="{Binding SelectedFunction.Name}" Style="{StaticResource SubheadingText}"
+                                   VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="1" Text="{Binding SelectedFunction.Description}" TextWrapping="Wrap"
+                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,12"/>
+
+                    <!-- Note -->
+                    <Border Grid.Row="2" Background="#1AFFb300" BorderBrush="{StaticResource WarningBrush}"
+                            BorderThickness="0,0,0,0" CornerRadius="4" Padding="12,8" Margin="0,0,0,12"
+                            Visibility="{Binding SelectedFunction.Note, Converter={StaticResource NullToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚠ " FontSize="13" Foreground="{StaticResource WarningBrush}"/>
+                            <TextBlock Text="{Binding SelectedFunction.Note}" TextWrapping="Wrap"
+                                       Foreground="{StaticResource WarningBrush}" FontSize="12"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Requirements -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,12">
+                        <Border Padding="6,3" CornerRadius="4" Background="#1A4CAF50" Margin="0,0,6,0"
+                                Visibility="{Binding SelectedFunction.RequiresEngineRunning, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="🔑 Engine Running" FontSize="11" Foreground="{StaticResource SuccessBrush}"/>
+                        </Border>
+                        <Border Padding="6,3" CornerRadius="4" Background="#1AFF6F00" Margin="0,0,6,0"
+                                Visibility="{Binding SelectedFunction.RequiresIgnitionOff, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="🔇 Ignition OFF" FontSize="11" Foreground="{StaticResource AccentBrush}"/>
+                        </Border>
+                        <Border Padding="6,3" CornerRadius="4" Background="#1A29B6F6"
+                                Visibility="{Binding SelectedFunction.RequiresVehicleStationary, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="🚫 Vehicle Stationary" FontSize="11" Foreground="{StaticResource InfoBrush}"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Status -->
+                    <Border Grid.Row="4" CornerRadius="6" Padding="12" Background="#0AFFFFFF" Margin="0,0,0,12">
+                        <TextBlock Text="{Binding SelectedFunction.StatusText}" FontFamily="Consolas"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                    </Border>
+
+                    <!-- Run button -->
+                    <Button Grid.Row="5" Command="{Binding RunFunctionCommand}"
+                            CommandParameter="{Binding SelectedFunction}"
+                            Padding="20,12"
+                            HorizontalAlignment="Left" FontSize="14">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource AccentButton}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="▶ Run: " FontSize="14"/>
+                            <TextBlock Text="{Binding SelectedFunction.Name}" FontSize="14" MaxWidth="200"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Battery Test Result -->
+            <Border Grid.Row="1" Style="{StaticResource CardStyle}"
+                    Visibility="{Binding ShowBatteryTest, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Style="{StaticResource SubheadingText}" Text="🔋 BATTERY TEST RESULT" Margin="0,0,0,12"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Result:"           Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding BatteryInfo.ResultText}" FontWeight="Bold" HorizontalAlignment="Right">
+                                            <TextBlock.Foreground>
+                                                <Binding Path="BatteryInfo.ResultColor" Converter="{StaticResource HexColorToBrushConverter}"/>
+                                            </TextBlock.Foreground>
+                                        </TextBlock>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Voltage:"          Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding BatteryInfo.Voltage, StringFormat='{}{0:F2} V'}" HorizontalAlignment="Right" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="State of Health:"  Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding BatteryInfo.StateOfHealth, StringFormat='{}{0:F0} %'}" HorizontalAlignment="Right" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="State of Charge:"  Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding BatteryInfo.StateOfCharge, StringFormat='{}{0:F0} %'}" HorizontalAlignment="Right" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="CCA (measured):"   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding BatteryInfo.ColdCrankingAmps, StringFormat='{}{0:F0} A'}" HorizontalAlignment="Right" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Type:"             Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding BatteryInfo.BatteryType}" HorizontalAlignment="Right" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,4,0,0"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Right: Activity log + Battery Test button -->
+        <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource CardStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource SubheadingText}" Text="ACTIVITY LOG" Margin="0,0,0,8"/>
+                <Button Grid.Row="1" Content="🔋 Battery Conductance Test" Command="{Binding BatteryTestCommand}"
+                        Style="{StaticResource SuccessButton}" HorizontalAlignment="Stretch" Margin="0,0,0,8"/>
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Log}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="11"
+                                           Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
+                                           Margin="0,2"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <Button Grid.Row="3" Content="🗑 Clear Log" Command="{Binding ClearLogCommand}"
+                        Style="{StaticResource GhostButton}" Margin="0,8,0,0"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

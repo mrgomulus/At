@@ -48,5 +48,19 @@ namespace OBD2Suite.Services
 
         // ECU identification
         Task<Dictionary<string, string>> ReadEcuIdentificationAsync(int ecuAddress);
+
+        // Extended special functions (all return status string)
+        Task<string> PerformEpbServiceAsync(int ecuAddress);
+        Task<string> PerformDpfRegenerationAsync(int ecuAddress);
+        Task<string> RegisterBatteryAsync(int ecuAddress, int capacityAh, string batteryType);
+        Task<string> ResetAbsBleedAsync(int ecuAddress);
+        Task<string> PerformGearboxAdaptationResetAsync(int ecuAddress);
+        Task<string> PerformInjectorCodingAsync(int ecuAddress, string[] codes);
+        Task<string> PerformTpmsReregistrationAsync(int ecuAddress);
+        Task<string> ResetAdBlueAsync(int ecuAddress);
+        Task<string> ResetDpfAshCounterAsync(int ecuAddress);
+
+        // Manufacturer-specific info (OEM custom PIDs, enhanced live data)
+        Task<Dictionary<string, string>> ReadEnhancedPidsAsync();
     }
 }

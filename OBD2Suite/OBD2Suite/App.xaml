@@ -17,6 +17,8 @@
             <conv:ValueToWidthConverter             x:Key="ValueToWidthConverter"/>
             <conv:SeverityToColorConverter          x:Key="SeverityToColorConverter"/>
             <conv:NullToVisibilityConverter         x:Key="NullToVisibilityConverter"/>
+            <conv:BoolToSimTextConverter            x:Key="BoolToSimTextConverter"/>
+            <conv:HexColorToBrushConverter          x:Key="HexColorToBrushConverter"/>
 
             <!-- DataTemplates mapping ViewModel → View -->
             <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
@@ -36,6 +38,24 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
                 <views:SettingsView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ReadinessViewModel}">
+                <views:ReadinessView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:FreezeFrameViewModel}">
+                <views:FreezeFrameView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:Mode06ViewModel}">
+                <views:Mode06View/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:SpecialFunctionsViewModel}">
+                <views:SpecialFunctionsView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:DataLoggerViewModel}">
+                <views:DataLoggerView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:VinDecoderViewModel}">
+                <views:VinDecoderView/>
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

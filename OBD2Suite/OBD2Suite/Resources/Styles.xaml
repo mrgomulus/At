@@ -764,9 +764,7 @@
                                        Foreground="{StaticResource TextSecondaryBrush}"
                                        FontSize="{StaticResource FontSizeSmall}"
                                        FontWeight="SemiBold"
-                                       TextTransform="Uppercase"
-                                       Margin="0,0,0,8"
-                                       LetterSpacing="2"/>
+                                       Margin="0,0,0,8"/>
                             <Separator Grid.Row="0" Margin="0,20,0,0"/>
                             <ContentPresenter Grid.Row="1"/>
                         </Grid>

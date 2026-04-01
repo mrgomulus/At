@@ -87,14 +87,22 @@
         <!-- ── Navigation Bar ───────────────────────────────────────── -->
         <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}"
                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
-            <StackPanel Orientation="Horizontal" Margin="8,0">
-                <Button Content="📊 Dashboard"   Command="{Binding NavigateDashboardCommand}"   Style="{StaticResource NavButtonStyle}"/>
-                <Button Content="🔴 Fault Codes" Command="{Binding NavigateDtcCommand}"         Style="{StaticResource NavButtonStyle}"/>
-                <Button Content="🚗 Vehicle Info" Command="{Binding NavigateVehicleInfoCommand}" Style="{StaticResource NavButtonStyle}"/>
-                <Button Content="🔧 ECU Coding"  Command="{Binding NavigateCodingCommand}"      Style="{StaticResource NavButtonStyle}"/>
-                <Button Content="🏭 OEM Features" Command="{Binding NavigateOemFeaturesCommand}" Style="{StaticResource NavButtonStyle}"/>
-                <Button Content="⚙ Settings"     Command="{Binding NavigateSettingsCommand}"    Style="{StaticResource NavButtonStyle}"/>
-            </StackPanel>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Horizontal" Margin="8,0">
+                    <Button Content="📊 Dashboard"      Command="{Binding NavigateDashboardCommand}"        Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🔴 Fault Codes"    Command="{Binding NavigateDtcCommand}"              Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="📸 Freeze Frame"   Command="{Binding NavigateFreezeFrameCommand}"      Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="📋 I/M Readiness"  Command="{Binding NavigateReadinessCommand}"        Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🔬 Mode 06"        Command="{Binding NavigateMode06Command}"           Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="📊 Data Logger"    Command="{Binding NavigateDataLoggerCommand}"       Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🔎 VIN Decoder"    Command="{Binding NavigateVinDecoderCommand}"       Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🚗 Vehicle Info"   Command="{Binding NavigateVehicleInfoCommand}"      Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🔧 ECU Coding"     Command="{Binding NavigateCodingCommand}"           Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🏭 OEM Features"   Command="{Binding NavigateOemFeaturesCommand}"      Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🛠 Service Funcs"  Command="{Binding NavigateSpecialFunctionsCommand}" Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="⚙ Settings"        Command="{Binding NavigateSettingsCommand}"         Style="{StaticResource NavButtonStyle}"/>
+                </StackPanel>
+            </ScrollViewer>
         </Border>
 
         <!-- ── Content Area (ViewModel-driven via DataTemplates) ───── -->

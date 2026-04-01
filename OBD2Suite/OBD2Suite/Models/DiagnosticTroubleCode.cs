@@ -29,6 +29,8 @@ namespace OBD2Suite.Models
         public DtcCategory Category { get; set; } = DtcCategory.Powertrain;
         public bool IsMilOn { get; set; }
         public byte StatusByte { get; set; }
+        public bool IsActive => Status == DtcStatus.Confirmed || Status == DtcStatus.Permanent;
+        public DateTime Timestamp => FirstSeen;
         public FreezeFrameData? FreezeFrame { get; set; }
         public DateTime FirstSeen { get; set; } = DateTime.Now;
         public int OccurrenceCount { get; set; } = 1;

@@ -79,4 +79,30 @@ namespace OBD2Suite.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
+
+    /// <summary>Converts bool to simulation/continuous text labels.</summary>
+    public class BoolToSimTextConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is bool b && b ? "Continuous" : "Non-continuous";
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    /// <summary>Converts a color hex string "#RRGGBB" to a SolidColorBrush.</summary>
+    public class HexColorToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            try
+            {
+                if (value is string hex)
+                    return new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+            }
+            catch { }
+            return new SolidColorBrush(Colors.Gray);
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
 }
