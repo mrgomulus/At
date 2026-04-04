@@ -1,3 +1,5 @@
 backend/disruption_management.db
 **/__pycache__/
 **/*.pyc
+frontend/node_modules/
+frontend/dist/
