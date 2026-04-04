@@ -108,7 +108,7 @@ def dashboard_favorites(db: Session = Depends(get_db)):
     favs = (
         db.query(ConnectionFavorite)
         .options(joinedload(ConnectionFavorite.variable), joinedload(ConnectionFavorite.connection))
-        .filter(ConnectionFavorite.show_in_dashboard == True)  # noqa: E712
+        .filter(ConnectionFavorite.show_in_dashboard.is_(True))
         .order_by(ConnectionFavorite.sort_order)
         .all()
     )

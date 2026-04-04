@@ -21,7 +21,7 @@ def get_kpis(db: Session = Depends(get_db)):
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     last_month_start = (month_start - timedelta(days=1)).replace(day=1)
 
-    total_disruptions = db.query(Disruption).filter(Disruption.archived == False).count()  # noqa: E712
+    total_disruptions = db.query(Disruption).filter(Disruption.archived.is_(False)).count()
     this_month = db.query(Disruption).filter(Disruption.start_datetime >= month_start).count()
     last_month = db.query(Disruption).filter(
         Disruption.start_datetime >= last_month_start,
@@ -29,27 +29,27 @@ def get_kpis(db: Session = Depends(get_db)):
     ).count()
 
     duration_result = (
-        db.query(func.sum(Disruption.duration_minutes)).filter(Disruption.archived == False).scalar() or 0  # noqa: E712
+        db.query(func.sum(Disruption.duration_minutes)).filter(Disruption.archived.is_(False)).scalar() or 0
     )
     avg_duration = (
-        db.query(func.avg(Disruption.duration_minutes)).filter(Disruption.archived == False).scalar() or 0  # noqa: E712
+        db.query(func.avg(Disruption.duration_minutes)).filter(Disruption.archived.is_(False)).scalar() or 0
     )
     service_required = db.query(Disruption).filter(
-        Disruption.service_required == True, Disruption.archived == False  # noqa: E712
+        Disruption.service_required.is_(True), Disruption.archived.is_(False)
     ).count()
 
     critical = db.query(Disruption).filter(
-        Disruption.severity == "critical", Disruption.archived == False  # noqa: E712
+        Disruption.severity == "critical", Disruption.archived.is_(False)
     ).count()
     high = db.query(Disruption).filter(
-        Disruption.severity == "high", Disruption.archived == False  # noqa: E712
+        Disruption.severity == "high", Disruption.archived.is_(False)
     ).count()
 
     total_connections = db.query(OpcUaConnection).count()
     active_connections = db.query(OpcUaConnection).filter(OpcUaConnection.status == "connected").count()
     total_variables = db.query(OpcUaVariable).count()
     total_favorites = db.query(ConnectionFavorite).count()
-    alarms_active = db.query(ConnectionFavorite).filter(ConnectionFavorite.alarm_enabled == True).count()  # noqa: E712
+    alarms_active = db.query(ConnectionFavorite).filter(ConnectionFavorite.alarm_enabled.is_(True)).count()
 
     recent_tracking = db.query(VariableTracking).filter(
         VariableTracking.timestamp >= now - timedelta(hours=1)

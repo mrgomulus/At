@@ -124,7 +124,7 @@ def test_connection(conn_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         conn.status = "error"
         db.commit()
-        return {"status": "error", "message": "Connection test failed"}
+        return {"status": "error", "message": f"Connection test failed: {str(e)}"}
 
 
 @router.get("/{conn_id}/stats")
