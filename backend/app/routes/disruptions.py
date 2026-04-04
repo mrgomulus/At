@@ -117,7 +117,7 @@ def list_disruptions(
 
 @router.post("/", response_model=DisruptionResponse, status_code=status.HTTP_201_CREATED)
 def create_disruption(dis: DisruptionCreate, db: Session = Depends(get_db)):
-    data = dis.dict()
+    data = dis.model_dump()
     data["disruption_number"] = generate_disruption_number()
     db_dis = Disruption(**data)
     db.add(db_dis)
@@ -139,7 +139,7 @@ def update_disruption(dis_id: int, update: DisruptionUpdate, db: Session = Depen
     dis = db.query(Disruption).filter(Disruption.id == dis_id).first()
     if not dis:
         raise HTTPException(status_code=404, detail="Disruption not found")
-    for field, value in update.dict(exclude_unset=True).items():
+    for field, value in update.model_dump(exclude_unset=True).items():
         setattr(dis, field, value)
     db.commit()
     db.refresh(dis)

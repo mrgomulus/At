@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 from datetime import datetime, timedelta
 from ..database import get_db
 from ..models import (
@@ -95,10 +95,10 @@ def get_kpis(db: Session = Depends(get_db)):
 @router.get("/health")
 def health_check(db: Session = Depends(get_db)):
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db_status = "healthy"
-    except Exception as e:
-        db_status = f"error: {e}"
+    except Exception:
+        db_status = "error"
     return {
         "status": "ok",
         "timestamp": datetime.utcnow().isoformat(),

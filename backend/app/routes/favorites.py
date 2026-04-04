@@ -89,7 +89,7 @@ def add_favorite(fav: FavoriteCreate, db: Session = Depends(get_db)):
     ).first()
     if existing:
         raise HTTPException(status_code=400, detail="Variable already in favorites for this connection")
-    db_fav = ConnectionFavorite(**fav.dict())
+    db_fav = ConnectionFavorite(**fav.model_dump())
     db.add(db_fav)
     db.commit()
     db.refresh(db_fav)
@@ -166,7 +166,7 @@ def update_favorite(fav_id: int, update: FavoriteUpdate, db: Session = Depends(g
     fav = db.query(ConnectionFavorite).filter(ConnectionFavorite.id == fav_id).first()
     if not fav:
         raise HTTPException(status_code=404, detail="Favorite not found")
-    for field, value in update.dict(exclude_unset=True).items():
+    for field, value in update.model_dump(exclude_unset=True).items():
         setattr(fav, field, value)
     db.commit()
     db.refresh(fav)

@@ -58,7 +58,7 @@ def list_connections(db: Session = Depends(get_db)):
 
 @router.post("/", response_model=ConnectionResponse, status_code=status.HTTP_201_CREATED)
 def create_connection(conn: ConnectionCreate, db: Session = Depends(get_db)):
-    db_conn = OpcUaConnection(**conn.dict())
+    db_conn = OpcUaConnection(**conn.model_dump())
     db.add(db_conn)
     db.commit()
     db.refresh(db_conn)
@@ -78,7 +78,7 @@ def update_connection(conn_id: int, update: ConnectionUpdate, db: Session = Depe
     conn = db.query(OpcUaConnection).filter(OpcUaConnection.id == conn_id).first()
     if not conn:
         raise HTTPException(status_code=404, detail="Connection not found")
-    for field, value in update.dict(exclude_unset=True).items():
+    for field, value in update.model_dump(exclude_unset=True).items():
         setattr(conn, field, value)
     db.commit()
     db.refresh(conn)
@@ -124,7 +124,7 @@ def test_connection(conn_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         conn.status = "error"
         db.commit()
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": "Connection test failed"}
 
 
 @router.get("/{conn_id}/stats")

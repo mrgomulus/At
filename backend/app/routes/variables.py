@@ -75,7 +75,7 @@ def create_variable(var: VariableCreate, db: Session = Depends(get_db)):
     conn = db.query(OpcUaConnection).filter(OpcUaConnection.id == var.connection_id).first()
     if not conn:
         raise HTTPException(status_code=404, detail="Connection not found")
-    db_var = OpcUaVariable(**var.dict())
+    db_var = OpcUaVariable(**var.model_dump())
     db.add(db_var)
     db.commit()
     db.refresh(db_var)
@@ -95,7 +95,7 @@ def update_variable(var_id: int, update: VariableUpdate, db: Session = Depends(g
     var = db.query(OpcUaVariable).filter(OpcUaVariable.id == var_id).first()
     if not var:
         raise HTTPException(status_code=404, detail="Variable not found")
-    for field, value in update.dict(exclude_unset=True).items():
+    for field, value in update.model_dump(exclude_unset=True).items():
         setattr(var, field, value)
     db.commit()
     db.refresh(var)
