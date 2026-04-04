@@ -1,0 +1,3 @@
+backend/disruption_management.db
+**/__pycache__/
+**/*.pyc
