@@ -21,16 +21,35 @@ namespace OBD2Suite.Services
             // ELM327 WiFi clones (most common)
             ("192.168.0.10",  35000, "ELM327 WiFi (default)"),
             ("192.168.0.10",  23,    "ELM327 WiFi (Telnet)"),
+            
             // Vgate iCar WiFi
             ("192.168.0.10",  3000,  "Vgate iCar WiFi"),
+            
             // BAFX Products WiFi / access-point mode
             ("192.168.1.10",  35000, "BAFX WiFi"),
+            
             // SoftAP address used by some newer clones
             ("192.168.4.1",   35000, "ELM327 SoftAP"),
+            
             // OBDLink MX Wi-Fi default
             ("192.168.0.1",   35000, "OBDLink MX Wi-Fi"),
+            
             // Carlinkit / similar TCP OBD boxes
             ("192.168.10.10", 35000, "OBD TCP Adapter"),
+            
+            // WOW Wurth / Snooper (common configuration)
+            ("192.168.178.1", 35000, "WOW Wurth WiFi"),
+            ("192.168.0.20",  35000, "WOW Snooper WiFi"),
+            
+            // UniCarScan UCSI
+            ("192.168.1.1",   35000, "UniCarScan WiFi"),
+            
+            // ThinkDiag / TOPDON WiFi adapters
+            ("192.168.1.100", 35000, "ThinkDiag WiFi"),
+            ("192.168.0.100", 35000, "TOPDON WiFi"),
+            
+            // Bosch KTS WiFi module
+            ("192.168.100.1", 35000, "Bosch KTS WiFi"),
         };
 
         /// <summary>Connection probe timeout in milliseconds.</summary>
@@ -128,11 +147,28 @@ namespace OBD2Suite.Services
         private static ObdAdapterBrand DetectNetworkBrand(string label)
         {
             var u = label.ToUpperInvariant();
-            if (u.Contains("OBDLINK"))  return ObdAdapterBrand.OBDLink;
-            if (u.Contains("VGATE") || u.Contains("ICAR")) return ObdAdapterBrand.Vgate;
-            if (u.Contains("BAFX"))     return ObdAdapterBrand.BAFX;
-            if (u.Contains("CARISTA"))  return ObdAdapterBrand.Carista;
-            if (u.Contains("ELM327"))   return ObdAdapterBrand.ELM327;
+            
+            // Check for specific brands (most specific to least specific)
+            if (u.Contains("WOW") || u.Contains("WURTH"))          return ObdAdapterBrand.WOW;
+            if (u.Contains("OBDLINK"))                             return ObdAdapterBrand.OBDLink;
+            if (u.Contains("BLUEDRIVER"))                          return ObdAdapterBrand.BlueDriver;
+            if (u.Contains("UNICARSCAN") || u.Contains("UCSI"))    return ObdAdapterBrand.UniCarScan;
+            if (u.Contains("THINKDIAG"))                           return ObdAdapterBrand.ThinkDiag;
+            if (u.Contains("TOPDON"))                              return ObdAdapterBrand.TOPDON;
+            if (u.Contains("BOSCH") && u.Contains("KTS"))          return ObdAdapterBrand.Bosch;
+            if (u.Contains("FOXWELL"))                             return ObdAdapterBrand.Foxwell;
+            if (u.Contains("ANCEL"))                               return ObdAdapterBrand.Ancel;
+            if (u.Contains("VGATE") || u.Contains("ICAR"))         return ObdAdapterBrand.Vgate;
+            if (u.Contains("BAFX"))                                return ObdAdapterBrand.BAFX;
+            if (u.Contains("CARISTA"))                             return ObdAdapterBrand.Carista;
+            if (u.Contains("CARLY"))                               return ObdAdapterBrand.Carly;
+            if (u.Contains("VEEPEAK"))                             return ObdAdapterBrand.Veepeak;
+            if (u.Contains("LAUNCH"))                              return ObdAdapterBrand.Launch;
+            if (u.Contains("AUTEL"))                               return ObdAdapterBrand.Autel;
+            
+            // Generic ELM327 should be last
+            if (u.Contains("ELM327"))                              return ObdAdapterBrand.ELM327;
+            
             return ObdAdapterBrand.Unknown;
         }
     }

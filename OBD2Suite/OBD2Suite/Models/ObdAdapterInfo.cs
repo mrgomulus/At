@@ -6,8 +6,28 @@ namespace OBD2Suite.Models
     /// <summary>Well-known OBD adapter brands / chip families.</summary>
     public enum ObdAdapterBrand
     {
-        Unknown, ELM327, OBDLink, Veepeak, BAFX, BlueDriver,
-        iCar, Vgate, Carista, Carly, Launch, Autel
+        Unknown, 
+        ELM327,         // Generic ELM327 chipset
+        OBDLink,        // OBDLink MX/MX+/EX series
+        Veepeak,        // Veepeak adapters
+        BAFX,           // BAFX Products adapters
+        BlueDriver,     // BlueDriver Bluetooth Pro
+        iCar,           // Vgate iCar series
+        Vgate,          // Vgate (iCar Pro, iCar 2, etc.)
+        Carista,        // Carista OBD2 adapter
+        Carly,          // Carly Universal Adapter
+        Launch,         // Launch X431 series
+        Autel,          // Autel MaxiSys series
+        WOW,            // Wurth WOW/WOW Snooper
+        UniCarScan,     // UniCarScan UCSI adapters
+        KONNWEI,        // KONNWEI KW902/KW903
+        Foxwell,        // Foxwell NT series
+        Ancel,          // Ancel AD series
+        ThinkDiag,      // ThinkDiag adapters
+        OBDeleven,      // OBDeleven Pro
+        TOPDON,         // TOPDON ArtiDiag series
+        Bosch,          // Bosch KTS series
+        Actron          // Actron CP series
     }
 
     /// <summary>

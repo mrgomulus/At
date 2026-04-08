@@ -115,17 +115,32 @@ namespace OBD2Suite.Services
         public static ObdAdapterBrand DetectBrand(string name)
         {
             var u = name.ToUpperInvariant();
-            if (u.Contains("OBDLINK"))   return ObdAdapterBrand.OBDLink;
-            if (u.Contains("VEEPEAK"))   return ObdAdapterBrand.Veepeak;
-            if (u.Contains("BAFX"))      return ObdAdapterBrand.BAFX;
-            if (u.Contains("BLUEDRIVER"))return ObdAdapterBrand.BlueDriver;
-            if (u.Contains("ICAR"))      return ObdAdapterBrand.iCar;
-            if (u.Contains("VGATE"))     return ObdAdapterBrand.Vgate;
-            if (u.Contains("CARISTA"))   return ObdAdapterBrand.Carista;
-            if (u.Contains("CARLY"))     return ObdAdapterBrand.Carly;
-            if (u.Contains("LAUNCH"))    return ObdAdapterBrand.Launch;
-            if (u.Contains("AUTEL"))     return ObdAdapterBrand.Autel;
-            if (u.Contains("ELM327") || u.Contains("ELM 327")) return ObdAdapterBrand.ELM327;
+            
+            // Check for specific brands first (most specific to least specific)
+            if (u.Contains("WOW") || u.Contains("WURTH"))          return ObdAdapterBrand.WOW;
+            if (u.Contains("OBDLINK"))                             return ObdAdapterBrand.OBDLink;
+            if (u.Contains("BLUEDRIVER"))                          return ObdAdapterBrand.BlueDriver;
+            if (u.Contains("OBDELEVEN") || u.Contains("OBD ELEVEN")) return ObdAdapterBrand.OBDeleven;
+            if (u.Contains("VEEPEAK"))                             return ObdAdapterBrand.Veepeak;
+            if (u.Contains("BAFX"))                                return ObdAdapterBrand.BAFX;
+            if (u.Contains("UNICARSCAN") || u.Contains("UCSI"))    return ObdAdapterBrand.UniCarScan;
+            if (u.Contains("KONNWEI") || u.Contains("KW902") || u.Contains("KW903")) return ObdAdapterBrand.KONNWEI;
+            if (u.Contains("FOXWELL"))                             return ObdAdapterBrand.Foxwell;
+            if (u.Contains("ANCEL"))                               return ObdAdapterBrand.Ancel;
+            if (u.Contains("THINKDIAG"))                           return ObdAdapterBrand.ThinkDiag;
+            if (u.Contains("TOPDON"))                              return ObdAdapterBrand.TOPDON;
+            if (u.Contains("BOSCH") && u.Contains("KTS"))          return ObdAdapterBrand.Bosch;
+            if (u.Contains("ACTRON") || u.Contains("CP"))          return ObdAdapterBrand.Actron;
+            if (u.Contains("ICAR"))                                return ObdAdapterBrand.iCar;
+            if (u.Contains("VGATE"))                               return ObdAdapterBrand.Vgate;
+            if (u.Contains("CARISTA"))                             return ObdAdapterBrand.Carista;
+            if (u.Contains("CARLY"))                               return ObdAdapterBrand.Carly;
+            if (u.Contains("LAUNCH"))                              return ObdAdapterBrand.Launch;
+            if (u.Contains("AUTEL"))                               return ObdAdapterBrand.Autel;
+            
+            // Generic ELM327 should be last
+            if (u.Contains("ELM327") || u.Contains("ELM 327"))     return ObdAdapterBrand.ELM327;
+            
             return ObdAdapterBrand.Unknown;
         }
     }
