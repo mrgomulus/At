@@ -1,0 +1,122 @@
+<Window x:Class="OBD2Suite.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="OBD2Suite — Professional Diagnostic Tool"
+        Height="900" Width="1400"
+        MinHeight="700" MinWidth="1100"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="56"/>
+            <RowDefinition Height="48"/>
+            <RowDefinition/>
+            <RowDefinition Height="32"/>
+        </Grid.RowDefinitions>
+
+        <!-- ── Title Bar ─────────────────────────────────────────────── -->
+        <Border Grid.Row="0" Background="{StaticResource PrimaryGradientBrush}">
+            <Grid Margin="16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="36" Height="36" Background="#20FFFFFF" CornerRadius="8" Margin="0,0,12,0">
+                        <TextBlock Text="⚙" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="OBD2Suite" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="Professional Diagnostic Tool" FontSize="10" Foreground="#99FFFFFF"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <Ellipse Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="{StaticResource ErrorBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                        <Setter Property="Fill" Value="{StaticResource SuccessBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock VerticalAlignment="Center" Foreground="White" FontSize="13">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="Disconnected"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                        <Setter Property="Text" Value="Connected"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="{Binding ConnectionInfo}" Foreground="#99FFFFFF" FontSize="11"
+                               Margin="8,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <Button Grid.Column="3" Command="{Binding ConnectCommand}"
+                        VerticalAlignment="Center" Padding="16,8" FontSize="13">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+                            <Setter Property="Content" Value="Connect"/>
+                            <Setter Property="Background" Value="{StaticResource SuccessGradientBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                    <Setter Property="Content" Value="Disconnect"/>
+                                    <Setter Property="Background" Value="{StaticResource ErrorGradientBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- ── Navigation Bar ───────────────────────────────────────── -->
+        <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Horizontal" Margin="8,0">
+                    <Button Content="📊 Dashboard"      Command="{Binding NavigateDashboardCommand}"        Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🔴 Fault Codes"    Command="{Binding NavigateDtcCommand}"              Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="📸 Freeze Frame"   Command="{Binding NavigateFreezeFrameCommand}"      Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="📋 I/M Readiness"  Command="{Binding NavigateReadinessCommand}"        Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🔬 Mode 06"        Command="{Binding NavigateMode06Command}"           Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="📊 Data Logger"    Command="{Binding NavigateDataLoggerCommand}"       Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🔎 VIN Decoder"    Command="{Binding NavigateVinDecoderCommand}"       Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🚗 Vehicle Info"   Command="{Binding NavigateVehicleInfoCommand}"      Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🔧 ECU Coding"     Command="{Binding NavigateCodingCommand}"           Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🏭 OEM Features"   Command="{Binding NavigateOemFeaturesCommand}"      Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="🛠 Service Funcs"  Command="{Binding NavigateSpecialFunctionsCommand}" Style="{StaticResource NavButtonStyle}"/>
+                    <Button Content="⚙ Settings"        Command="{Binding NavigateSettingsCommand}"         Style="{StaticResource NavButtonStyle}"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ── Content Area (ViewModel-driven via DataTemplates) ───── -->
+        <ContentControl Grid.Row="2" Content="{Binding CurrentView}"/>
+
+        <!-- ── Status Bar ───────────────────────────────────────────── -->
+        <Border Grid.Row="3" Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
+            <Grid Margin="12,0">
+                <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource SecondaryTextBrush}"
+                           FontSize="12" VerticalAlignment="Center" FontFamily="Consolas"/>
+                <TextBlock Text="OBD2Suite v1.0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Foreground="{StaticResource SecondaryTextBrush}" FontSize="11"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

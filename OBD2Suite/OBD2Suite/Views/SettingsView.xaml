@@ -1,0 +1,272 @@
+<UserControl x:Class="OBD2Suite.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Background="{StaticResource BackgroundBrush}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="Connection Settings" FontSize="22" FontWeight="Bold"
+                   Foreground="{StaticResource AccentBrush}" Margin="0,0,0,20"/>
+
+        <!-- Interface Type Selection -->
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="Interface Type" Foreground="{StaticResource SecondaryTextBrush}"
+                           FontSize="11" Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <RadioButton Content="USB / Serial"
+                                 IsChecked="{Binding IsSerialMode}"
+                                 GroupName="IfaceType"
+                                 Foreground="{StaticResource PrimaryTextBrush}"
+                                 Margin="0,0,20,0"
+                                 Command="{Binding RefreshPortsCommand}"/>
+                    <RadioButton Content="Bluetooth"
+                                 IsChecked="{Binding IsBluetoothMode}"
+                                 GroupName="IfaceType"
+                                 Foreground="{StaticResource PrimaryTextBrush}"
+                                 Margin="0,0,20,0"/>
+                    <RadioButton Content="WiFi / Network"
+                                 IsChecked="{Binding IsWiFiMode}"
+                                 GroupName="IfaceType"
+                                 Foreground="{StaticResource PrimaryTextBrush}"/>
+                </StackPanel>
+
+                <!-- Scan Button + Status -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Content="🔍 Scan for Adapters"
+                            Command="{Binding ScanAdaptersCommand}"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Width="160" Margin="0,0,12,0"/>
+                    <TextBlock Text="{Binding ScanStatus}"
+                               Foreground="{StaticResource SecondaryTextBrush}"
+                               VerticalAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <!-- Found Adapters List -->
+                <Border Visibility="{Binding ShowAdapterList, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Background="#0A00D4FF" CornerRadius="6" Padding="8" Margin="0,4,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Found Adapters" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,6"/>
+                        <ListBox ItemsSource="{Binding FoundAdapters}"
+                                 SelectedItem="{Binding SelectedAdapter}"
+                                 MaxHeight="160"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Foreground="{StaticResource PrimaryTextBrush}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Interface}" Width="80"
+                                                   Foreground="{StaticResource AccentBrush}"
+                                                   FontSize="11"/>
+                                        <TextBlock Text="{Binding Name}" Margin="6,0,0,0"
+                                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+                                        <TextBlock Text="{Binding Description}" Margin="8,0,0,0"
+                                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                                   FontSize="11"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <Button Content="Use Selected Adapter"
+                                Command="{Binding UseSelectedAdapterCommand}"
+                                Style="{StaticResource BaseButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Interface-specific settings panel -->
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+            <Grid>
+                <!-- USB / Serial settings -->
+                <Grid Visibility="{Binding IsSerialMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                        <TextBlock Text="COM Port" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,4"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" ItemsSource="{Binding AvailablePorts}"
+                                      SelectedItem="{Binding SelectedPort}"
+                                      Style="{StaticResource BaseComboBoxStyle}"/>
+                            <Button Grid.Column="1" Content="↺" Command="{Binding RefreshPortsCommand}"
+                                    Style="{StaticResource BaseButtonStyle}" Padding="8,6" Margin="4,0,0,0"
+                                    ToolTip="Refresh COM ports"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                        <TextBlock Text="Baud Rate" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding BaudRates}"
+                                  SelectedItem="{Binding SelectedBaudRate}"
+                                  Style="{StaticResource BaseComboBoxStyle}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Protocol" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding Protocols}"
+                                  SelectedItem="{Binding SelectedProtocol}"
+                                  Style="{StaticResource BaseComboBoxStyle}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- WiFi / Network settings -->
+                <Grid Visibility="{Binding IsWiFiMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                        <TextBlock Text="IP Address" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding WiFiIpAddress, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}"
+                                 Background="#1AFFFFFF" BorderBrush="{StaticResource AccentBrush}"
+                                 Padding="6,4"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                        <TextBlock Text="TCP Port" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding WiFiPort, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}"
+                                 Background="#1AFFFFFF" BorderBrush="{StaticResource AccentBrush}"
+                                 Padding="6,4"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Protocol" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding Protocols}"
+                                  SelectedItem="{Binding SelectedProtocol}"
+                                  Style="{StaticResource BaseComboBoxStyle}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Bluetooth settings -->
+                <Grid Visibility="{Binding IsBluetoothMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                        <TextBlock Text="Bluetooth MAC Address" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding BluetoothAddress, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}"
+                                 Background="#1AFFFFFF" BorderBrush="{StaticResource AccentBrush}"
+                                 Padding="6,4"
+                                 ToolTip="12-hex-digit MAC, e.g. 001122334455"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,16,0">
+                        <TextBlock Text="Virtual COM Port (optional)" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,4"/>
+                        <TextBox Text="{Binding BluetoothComPort, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}"
+                                 Background="#1AFFFFFF" BorderBrush="{StaticResource AccentBrush}"
+                                 Padding="6,4"
+                                 ToolTip="COM port assigned by Windows when the BT device was paired (e.g. COM5). Leave blank to connect via direct RFCOMM socket."/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Protocol" Foreground="{StaticResource SecondaryTextBrush}"
+                                   FontSize="11" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding Protocols}"
+                                  SelectedItem="{Binding SelectedProtocol}"
+                                  Style="{StaticResource BaseComboBoxStyle}"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Simulation Mode + Connect Buttons -->
+        <Border Grid.Row="3" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Simulation Mode -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                    <CheckBox IsChecked="{Binding SimulationMode}"
+                              Foreground="{StaticResource PrimaryTextBrush}"
+                              VerticalAlignment="Center">
+                        <TextBlock Text="Simulation Mode (no hardware required)" Foreground="{StaticResource PrimaryTextBrush}"/>
+                    </CheckBox>
+                </StackPanel>
+
+                <!-- Buttons -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <Button Content="Connect" Command="{Binding ConnectCommand}"
+                            Style="{StaticResource AccentButtonStyle}" Width="130" Margin="0,0,12,0"/>
+                    <Button Content="Disconnect" Command="{Binding DisconnectCommand}"
+                            Style="{StaticResource BaseButtonStyle}" Width="130"/>
+                </StackPanel>
+
+                <!-- ELM Info -->
+                <StackPanel Grid.Row="2" Margin="0,12,0,0"
+                            Visibility="{Binding ElmInfo, Converter={StaticResource NullToVisibilityConverter}}">
+                    <TextBlock Text="Device Info" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding ElmInfo}" Foreground="{StaticResource AccentBrush}" FontFamily="Consolas"/>
+                </StackPanel>
+
+                <!-- Status -->
+                <Border Grid.Row="3" Margin="0,12,0,0"
+                        Background="#1A00D4FF" CornerRadius="6" Padding="12,8">
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource PrimaryTextBrush}"
+                               FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Tips -->
+        <Border Grid.Row="4" Background="#0AFFFFFF" CornerRadius="8" Padding="16">
+            <StackPanel>
+                <TextBlock Text="💡 Quick Start" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" Margin="0,0,0,8"/>
+                <TextBlock TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12">
+                    1. Enable Simulation Mode to explore all features without an OBD adapter.&#x0a;
+                    2. USB/Serial: Plug in your ELM327 USB adapter, select the COM port and click Connect.&#x0a;
+                    3. WiFi: Select WiFi, click Scan or enter 192.168.0.10:35000 (common ELM327 WiFi default).&#x0a;
+                    4. Bluetooth: Pair your adapter in Windows Settings first, then click Scan to find it.&#x0a;
+                    5. Typical baud rate for ELM327 USB: 38400. Some clones need 9600 or 115200.
+                </TextBlock>
+            </StackPanel>
+        </Border>
+    </Grid>
+    </ScrollViewer>
+</UserControl>
+

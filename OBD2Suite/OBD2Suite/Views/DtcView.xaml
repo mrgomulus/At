@@ -1,0 +1,118 @@
+<UserControl x:Class="OBD2Suite.Views.DtcView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="Diagnostic Trouble Codes" FontSize="22" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
+                <TextBlock Foreground="{StaticResource SecondaryTextBrush}" FontSize="12" Margin="0,4,0,0">
+                    <Run Text="Total: "/>
+                    <Run Text="{Binding DtcCount, Mode=OneWay}" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}"/>
+                    <Run Text="  Active: "/>
+                    <Run Text="{Binding ActiveCount, Mode=OneWay}" FontWeight="Bold" Foreground="{StaticResource ErrorBrush}"/>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+
+        <!-- Toolbar -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="🔍  Read DTCs" Command="{Binding ReadDtcsCommand}"
+                    Style="{StaticResource AccentButtonStyle}" Padding="16,8" Margin="0,0,8,0"/>
+            <Button Content="🗑  Clear DTCs" Command="{Binding ClearDtcsCommand}"
+                    Style="{StaticResource DangerButtonStyle}" Padding="16,8" Margin="0,0,8,0"/>
+            <Button Content="📤  Export CSV" Command="{Binding ExportCsvCommand}"
+                    Style="{StaticResource BaseButtonStyle}" Padding="16,8"/>
+            <Border Margin="16,0,0,0" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="120" Height="4"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            </Border>
+        </StackPanel>
+
+        <!-- DTC DataGrid -->
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Padding="0">
+            <DataGrid ItemsSource="{Binding Codes}"
+                      SelectedItem="{Binding SelectedDtc}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False" CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="Horizontal"
+                      Background="Transparent"
+                      RowBackground="#0AFFFFFF"
+                      AlternatingRowBackground="#05FFFFFF"
+                      BorderThickness="0"
+                      Foreground="{StaticResource PrimaryTextBrush}"
+                      ColumnHeaderHeight="36"
+                      RowHeight="32">
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#2A2A3E"/>
+                        <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Padding" Value="12,0"/>
+                        <Setter Property="BorderBrush" Value="#3A3A5C"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Padding" Value="12,0"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                    </Style>
+                </DataGrid.CellStyle>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Code"        Binding="{Binding Code}"        Width="90"/>
+                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                    <DataGridTextColumn Header="ECU"         Binding="{Binding EcuSource}"   Width="160"/>
+                    <DataGridTemplateColumn Header="Status" Width="90">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" Margin="4,4">
+                                    <Border.Background>
+                                        <Binding Path="IsActive" Converter="{StaticResource BoolToColorConverter}"/>
+                                    </Border.Background>
+                                    <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="White">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Stored"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter Property="Text" Value="Active"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Severity"    Binding="{Binding Severity}"    Width="90"/>
+                    <DataGridTextColumn Header="Timestamp"   Binding="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}" Width="90"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="3" Background="#1A00D4FF" CornerRadius="6" Padding="12,8" Margin="0,12,0,0">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource PrimaryTextBrush}" FontFamily="Consolas" FontSize="12"/>
+        </Border>
+    </Grid>
+</UserControl>
