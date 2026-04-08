@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Ports;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,10 +13,16 @@ namespace OBD2Suite.Services
     public class ObdService : IObdService
     {
         private SerialPort? _port;
+        private TcpClient? _tcpClient;
+        private NetworkStream? _networkStream;
         private ObdConnection? _connection;
         private readonly Random _rng = new();
 
-        public bool IsConnected => _port?.IsOpen == true || IsSimulationMode && _connection?.IsConnected == true;
+        public bool IsConnected =>
+            _port?.IsOpen == true ||
+            (_tcpClient?.Connected == true && _networkStream != null) ||
+            (IsSimulationMode && _connection?.IsConnected == true);
+
         public bool IsSimulationMode { get; set; } = false;
         public ObdConnection? CurrentConnection => _connection;
 
@@ -30,29 +38,29 @@ namespace OBD2Suite.Services
                 return true;
             }
 
+            return connection.Type switch
+            {
+                ConnectionType.WiFi      => await ConnectNetworkAsync(connection),
+                ConnectionType.Bluetooth => await ConnectBluetoothAsync(connection),
+                _                        => await ConnectSerialAsync(connection)
+            };
+        }
+
+        // ── Serial / USB connection ──────────────────────────────────────────
+
+        private async Task<bool> ConnectSerialAsync(ObdConnection connection)
+        {
             try
             {
                 _port = new SerialPort(connection.PortName, connection.BaudRate, Parity.None, 8, StopBits.One)
                 {
-                    ReadTimeout = connection.Timeout,
+                    ReadTimeout  = connection.Timeout,
                     WriteTimeout = connection.Timeout,
-                    NewLine = "\r"
+                    NewLine      = "\r"
                 };
                 _port.Open();
 
-                await SendRawAsync(ElmProtocol.ATZ);
-                await Task.Delay(1000);
-                _port.DiscardInBuffer();
-
-                var atzResp = await SendCommandAsync(ElmProtocol.ATZ, 2000);
-                connection.ElmVersion = atzResp.Contains("ELM") ? atzResp.Trim() : "Unknown";
-
-                await SendCommandAsync(ElmProtocol.ATE0);
-                await SendCommandAsync(ElmProtocol.ATL0);
-                await SendCommandAsync(ElmProtocol.ATH1);
-                await SendCommandAsync(ElmProtocol.ATSP0);
-                await SendCommandAsync(ElmProtocol.ATAT1);
-
+                await InitElmAsync(connection);
                 connection.IsConnected = true;
                 return true;
             }
@@ -61,40 +69,226 @@ namespace OBD2Suite.Services
                 _port?.Close();
                 _port = null;
                 connection.IsConnected = false;
-                throw new InvalidOperationException($"Connection failed: {ex.Message}", ex);
+                throw new InvalidOperationException($"Serial connection failed: {ex.Message}", ex);
             }
         }
+
+        // ── WiFi / Network (TCP) connection ─────────────────────────────────
+
+        private async Task<bool> ConnectNetworkAsync(ObdConnection connection)
+        {
+            try
+            {
+                _tcpClient = new TcpClient
+                {
+                    SendTimeout    = connection.Timeout,
+                    ReceiveTimeout = connection.Timeout
+                };
+                using var cts = new CancellationTokenSource(connection.Timeout);
+                await _tcpClient.ConnectAsync(connection.IpAddress, connection.NetworkPort, cts.Token);
+                _networkStream = _tcpClient.GetStream();
+
+                await InitElmAsync(connection);
+                connection.IsConnected = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _networkStream?.Dispose();
+                _networkStream = null;
+                _tcpClient?.Dispose();
+                _tcpClient = null;
+                connection.IsConnected = false;
+                throw new InvalidOperationException(
+                    $"Network connection to {connection.IpAddress}:{connection.NetworkPort} failed: {ex.Message}", ex);
+            }
+        }
+
+        // ── Bluetooth connection ─────────────────────────────────────────────
+
+        private async Task<bool> ConnectBluetoothAsync(ObdConnection connection)
+        {
+            // Many Bluetooth OBD adapters are paired as virtual COM ports.
+            if (!string.IsNullOrWhiteSpace(connection.PortName))
+            {
+                // Reuse serial path — the virtual COM port IS the BT connection.
+                try
+                {
+                    _port = new SerialPort(connection.PortName, 38400, Parity.None, 8, StopBits.One)
+                    {
+                        ReadTimeout  = connection.Timeout,
+                        WriteTimeout = connection.Timeout,
+                        NewLine      = "\r"
+                    };
+                    _port.Open();
+
+                    await InitElmAsync(connection);
+                    connection.IsConnected = true;
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    _port?.Close();
+                    _port = null;
+                    connection.IsConnected = false;
+                    throw new InvalidOperationException(
+                        $"Bluetooth (virtual COM port {connection.PortName}) failed: {ex.Message}", ex);
+                }
+            }
+
+            // Direct Bluetooth RFCOMM socket (address must be set).
+            if (string.IsNullOrWhiteSpace(connection.BluetoothAddress))
+                throw new InvalidOperationException(
+                    "No Bluetooth address or virtual COM port configured.");
+
+            return await ConnectBluetoothRfcommAsync(connection);
+        }
+
+        /// <summary>
+        /// Opens a Bluetooth RFCOMM socket directly using the Windows Winsock
+        /// AF_BTH address family (value 32) and the RFCOMM protocol (value 3).
+        /// The remote end-point is encoded as a custom <see cref="SocketAddress"/>.
+        /// </summary>
+        private async Task<bool> ConnectBluetoothRfcommAsync(ObdConnection connection)
+        {
+            const AddressFamily AfBluetooth   = (AddressFamily)32;
+            const System.Net.Sockets.ProtocolType RfcommProtocol = (System.Net.Sockets.ProtocolType)3;
+
+            // Parse MAC (12 hex chars, any separator) → UInt64 little-endian
+            var mac = connection.BluetoothAddress.Replace(":", "").Replace("-", "").Trim();
+            if (mac.Length != 12 || !TryParseBtAddress(mac, out var btAddr))
+                throw new InvalidOperationException(
+                    $"Invalid Bluetooth address: '{connection.BluetoothAddress}'");
+
+            // SPP service GUID: 00001101-0000-1000-8000-00805F9B34FB
+            var sppGuid = new Guid("00001101-0000-1000-8000-00805F9B34FB");
+
+            // Build sockaddr_bth (30 bytes):
+            // [0..1]  = AF_BTH (32, little-endian)
+            // [2..9]  = BT address (UInt64, little-endian)
+            // [10..25]= service class GUID
+            // [26..29]= port/channel (0 = auto-negotiate via SDP)
+            var sa = new SocketAddress(AfBluetooth, 30);
+            var addrBytes = BitConverter.GetBytes(btAddr);
+            for (int i = 0; i < 8; i++) sa[2 + i] = addrBytes[i];
+            var guidBytes = sppGuid.ToByteArray();
+            for (int i = 0; i < 16; i++) sa[10 + i] = guidBytes[i];
+            // Port bytes [26..29] remain 0 (let the stack negotiate the channel).
+
+            var socket = new Socket(AfBluetooth, SocketType.Stream, RfcommProtocol);
+            try
+            {
+                await Task.Run(() => socket.Connect(new BluetoothRfcommEndPoint(btAddr, sppGuid, sa)));
+
+                // Wrap socket in a NetworkStream so we can reuse the stream I/O path.
+                _networkStream = new NetworkStream(socket, ownsSocket: true);
+                _tcpClient     = null;  // not used for raw socket path
+
+                await InitElmAsync(connection);
+                connection.IsConnected = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                socket.Dispose();
+                _networkStream = null;
+                connection.IsConnected = false;
+                throw new InvalidOperationException(
+                    $"Bluetooth RFCOMM connection to {connection.BluetoothAddress} failed: {ex.Message}", ex);
+            }
+        }
+
+        private static bool TryParseBtAddress(string hex, out ulong address)
+        {
+            address = 0;
+            if (hex.Length != 12) return false;
+            try
+            {
+                // Bluetooth addresses are 48-bit (6 bytes).  We store them in the
+                // lower 6 bytes of a little-endian UInt64; bytes[6] and bytes[7]
+                // remain 0 intentionally.
+                var bytes = new byte[8];
+                for (int i = 0; i < 6; i++)
+                    bytes[i] = Convert.ToByte(hex.Substring((5 - i) * 2, 2), 16);
+                address = BitConverter.ToUInt64(bytes, 0);
+                return true;
+            }
+            catch { return false; }
+        }
+
+        // ── ELM327 initialisation (shared by all transports) ────────────────
+
+        private async Task InitElmAsync(ObdConnection connection)
+        {
+            await SendRawAsync(ElmProtocol.ATZ);
+            await Task.Delay(1000);
+            if (_port != null) _port.DiscardInBuffer();
+
+            var atzResp = await SendCommandAsync(ElmProtocol.ATZ, 2000);
+            connection.ElmVersion = atzResp.Contains("ELM") ? atzResp.Trim() : "Unknown";
+
+            await SendCommandAsync(ElmProtocol.ATE0);
+            await SendCommandAsync(ElmProtocol.ATL0);
+            await SendCommandAsync(ElmProtocol.ATH1);
+            await SendCommandAsync(ElmProtocol.ATSP0);
+            await SendCommandAsync(ElmProtocol.ATAT1);
+        }
+
+        // ── Disconnect ───────────────────────────────────────────────────────
 
         public async Task DisconnectAsync()
         {
             if (_connection != null) _connection.IsConnected = false;
-            if (_port?.IsOpen == true)
+            try
             {
-                try
-                {
+                if (IsConnected)
                     await SendCommandAsync(ElmProtocol.ATPC);
-                    _port.Close();
-                }
-                catch { }
             }
+            catch { }
+
+            _port?.Close();
             _port?.Dispose();
             _port = null;
+
+            _networkStream?.Dispose();
+            _networkStream = null;
+            _tcpClient?.Dispose();
+            _tcpClient = null;
         }
+
+        // ── SendCommand / raw I/O ────────────────────────────────────────────
 
         public async Task<string> SendCommandAsync(string command, int timeoutMs = 2000)
         {
             if (IsSimulationMode) return await SimulateCommandAsync(command);
-            if (_port == null || !_port.IsOpen) throw new InvalidOperationException("Not connected");
 
-            await SendRawAsync(command);
-            return await ReadResponseAsync(timeoutMs);
+            if (_port != null && _port.IsOpen)
+            {
+                await SendRawAsync(command);
+                return await ReadResponseAsync(timeoutMs);
+            }
+            if (_networkStream != null)
+            {
+                await SendRawStreamAsync(command);
+                return await ReadResponseStreamAsync(timeoutMs);
+            }
+            throw new InvalidOperationException("Not connected");
         }
 
         private async Task SendRawAsync(string command)
         {
-            if (_port == null) return;
             var bytes = Encoding.ASCII.GetBytes(command + "\r");
-            await Task.Run(() => _port.Write(bytes, 0, bytes.Length));
+            if (_port != null)
+                await Task.Run(() => _port.Write(bytes, 0, bytes.Length));
+            else if (_networkStream != null)
+                await _networkStream.WriteAsync(bytes);
+        }
+
+        private async Task SendRawStreamAsync(string command)
+        {
+            if (_networkStream == null) return;
+            var bytes = Encoding.ASCII.GetBytes(command + "\r");
+            await _networkStream.WriteAsync(bytes);
         }
 
         private async Task<string> ReadResponseAsync(int timeoutMs)
@@ -116,6 +310,30 @@ namespace OBD2Suite.Services
                 }
                 catch { }
             }, cts.Token);
+            return sb.ToString();
+        }
+
+        private async Task<string> ReadResponseStreamAsync(int timeoutMs)
+        {
+            if (_networkStream == null) return "";
+            var sb    = new StringBuilder();
+            var buf   = new byte[256];
+            using var cts = new CancellationTokenSource(timeoutMs);
+            try
+            {
+                while (!cts.Token.IsCancellationRequested)
+                {
+                    int n = await _networkStream.ReadAsync(buf, cts.Token);
+                    if (n == 0) break;
+                    for (int i = 0; i < n; i++)
+                    {
+                        char ch = (char)buf[i];
+                        if (ch == '>') return sb.ToString();
+                        sb.Append(ch);
+                    }
+                }
+            }
+            catch { }
             return sb.ToString();
         }
 
@@ -509,5 +727,26 @@ namespace OBD2Suite.Services
                 }
             };
         }
+    }
+
+    /// <summary>
+    /// Minimal <see cref="System.Net.EndPoint"/> that serialises to a
+    /// Windows <c>sockaddr_bth</c> structure (30 bytes, AF_BTH = 32).
+    /// Used for direct Bluetooth RFCOMM socket connections on Windows.
+    /// </summary>
+    internal sealed class BluetoothRfcommEndPoint : System.Net.EndPoint
+    {
+        private readonly SocketAddress _socketAddress;
+
+        public BluetoothRfcommEndPoint(ulong btAddress, Guid serviceGuid, SocketAddress sa)
+        {
+            _socketAddress = sa;
+        }
+
+        public override AddressFamily AddressFamily => (AddressFamily)32;
+
+        public override SocketAddress Serialize() => _socketAddress;
+
+        public override System.Net.EndPoint Create(SocketAddress socketAddress) => this;
     }
 }
